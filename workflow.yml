@@ -1,0 +1,77 @@
+name: Deploy Java Web App to Azure
+
+on:
+  [push,pull_request]
+
+# CONFIGURATION
+# For help, go to https://github.com/Azure/Actions
+#
+# 1. Set up the following secrets in your repository:
+#   AZURE_WEBAPP_PUBLISH_PROFILE
+#
+# 2. Change these variables for your configuration:
+env:
+  AZURE_WEBAPP_NAME: JavaPetstore  # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: ${{ github.workspace }} # set this to the path to your web app project
+  JAVA_VERSION: '1.8'                # set this to the node version to use
+  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AFF96A90F97547E0B90F79F9AAD1026E }}     # set GH repo secret with the publish profile of the web app
+  # Below variables are needed only to provision a wildfly based web app ; Optional if you already have a wildfly based web app on Azure
+  #CONTAINER_REGISTRY: ${{ secrets.REGISTRY_USERNAME }}.azurecr.io   # set this to Container Registry name 
+  #AZURE_RESOURCE_GROUP: ActionsDemo   # set this to your Azure Resource group's name 
+  #AZURE_APP_PLAN: ActionPlan  # set this to your App service plan's name 
+ 
+ 
+jobs:
+#   provision-webapp:
+#     runs-on: ubuntu-latest
+#     steps:
+#     # Provision a new Web App with wildfly container
+#     - name: Checkout
+#       uses: actions/checkout@v2.0.0
+#       with:
+#         repository: azure-Samples/app-service-wildfly
+#     - name: Azure authentication
+#       uses: azure/login@v1
+#       with:
+#         creds: ${{ secrets.AZURE_CREDENTIALS  }}
+#     - name: ACR authentication
+#       uses: azure/docker-login@v1
+#       with:
+#         login-server: ${{ env.CONTAINER_REGISTRY }}
+#         username: ${{ secrets.REGISTRY_USERNAME }}
+#         password: ${{ secrets.REGISTRY_PASSWORD }}    
+#     - name: Docker Build & Push to ACR
+#       run: |
+#         docker build . -t ${{ env.CONTAINER_REGISTRY }}/wildfly
+#         docker push ${{ env.CONTAINER_REGISTRY }}/wildfly
+#     - name: Azure CLI script to create a new Web App for Container
+#       uses: azure/CLI@v0-beta
+#       with:
+#         azcliversion: latest
+#         inlineScript: |
+#           az account show
+#           az webapp create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --plan ${{ env.AZURE_APP_PLAN }} --name ${{ env.AZURE_WEBAPP_NAME }}  -i ${{ env.CONTAINER_REGISTRY }}/wildfly
+  
+  build-and-deploy:
+#     needs: provision-webapp
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+    - name: Build with Maven
+      run: |
+        mvn clean install --file pom.xml -Dmaven.test.skip=true
+    - name: Azure authentication
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS  }}
+    - name: 'Deploy to Azure WebApp'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/target/*.war'
+        
+  # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
