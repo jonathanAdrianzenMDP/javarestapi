@@ -8,6 +8,11 @@ public class HomeController {
     
     @RequestMapping("/home")
     public String home(){
-        return "hola mundo java";
+        return "hola mundo java resp api";
+    }
+
+    @RequestMapping("/azure")
+    public String azure(){
+        return "desplegado en azure";
     }
 }
