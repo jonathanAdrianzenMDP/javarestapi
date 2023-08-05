@@ -64,10 +64,7 @@ jobs:
     - name: Build with Maven
       run: |
         mvn clean install --file pom.xml -Dmaven.test.skip=true
-    - name: Azure authentication
-      uses: javarestapi-r\$javarestapi-r
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS  }}
+    
     - name: 'Deploy to Azure WebApp'
       uses: azure/webapps-deploy@v2
       with: 
