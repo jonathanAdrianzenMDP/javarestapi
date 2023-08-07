@@ -8,7 +8,7 @@ public class HomeController {
     
     @RequestMapping("/home")
     public String home(){
-        return "hola mundo java resp api";
+        return "hola mundo java resp api v2";
     }
 
     @RequestMapping("/azure")
